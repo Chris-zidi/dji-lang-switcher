@@ -6,6 +6,7 @@
 // @author       o-park.chen
 // @match        https://store.dji.com/*
 // @match        https://stag-www-reactor.dbeta.me/*
+// @match        https://www-reactor.dji.com/*
 // @grant        none
 // @run-at       document-end
 // @updateURL    https://gist.githubusercontent.com/Chris-zidi/117e8a27bbecd234685f7d86d8d95aac/raw/dji-store-lang-switcher.user.js
@@ -117,7 +118,9 @@
   ];
 
   // ── 站点配置 ─────────────────────────────────────────────
-  const isDbeta = location.hostname.includes('dbeta.me');
+  const host = location.hostname;
+  const isDbeta = host.includes('dbeta.me');
+  const isReactor = host.includes('www-reactor.dji.com');
 
   // ── URL 切换函数 ──────────────────────────────────────────
   // path=null 表示美国，URL 无语种前缀
@@ -126,10 +129,10 @@
     const parts = url.pathname.split('/').filter(Boolean);
 
     // 判断第一段是否为语种前缀
-    // dbeta: 第一段是语种 或 直接是 mobile（美国无前缀）
-    // store: 第一段是语种 或 product/category 等（美国无前缀）
-    const knownPageSegments = isDbeta
+    const knownPageSegments = (isDbeta)
       ? ['mobile', 'product', 'category', 'cart', 'account', 'search']
+      : isReactor
+      ? ['handheld', 'product', 'category', 'cart', 'account', 'search']
       : ['product', 'category', 'cart', 'account', 'search', 'combo'];
     const hasLangPrefix = parts.length > 0 && !knownPageSegments.includes(parts[0]);
 
@@ -147,8 +150,8 @@
 
     url.pathname = '/' + parts.join('/');
 
-    if (isDbeta) {
-      // dbeta：只保留 workspace，不需要 set_region
+    if (isDbeta || isReactor) {
+      // dbeta / reactor：只保留 workspace，不需要 set_region
       url.searchParams.delete('set_region');
       url.searchParams.delete('from');
     } else {
