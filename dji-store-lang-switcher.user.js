@@ -176,7 +176,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      padding: 10px 8px;
+      padding: 6px 8px 10px 8px;
       background: rgba(18, 18, 28, 0.93);
       border-radius: 14px 0 0 14px;
       box-shadow: -4px 0 24px rgba(0,0,0,0.5);
@@ -185,22 +185,24 @@
       user-select: none;
       max-height: 90vh;
       overflow-y: auto;
-      overflow-x: visible;
+      overflow-x: hidden;
       scrollbar-width: thin;
       scrollbar-color: rgba(255,255,255,0.2) transparent;
     }
 
     #dji-lang-panel.collapsed {
-      transform: translateY(-50%) translateX(calc(100% - 26px));
+      transform: translateY(-50%) translateX(calc(100% + 0px));
     }
 
-    #dji-lang-toggle {
-      position: absolute;
-      left: -22px;
+    /* 收起/展开 tab，固定在面板左侧外部，不受 overflow 影响 */
+    #dji-lang-tab {
+      position: fixed;
       top: 50%;
+      right: 0;
       transform: translateY(-50%);
-      width: 22px;
-      height: 52px;
+      z-index: 999998;
+      width: 20px;
+      height: 56px;
       background: rgba(18, 18, 28, 0.93);
       border-radius: 8px 0 0 8px;
       cursor: pointer;
@@ -208,12 +210,12 @@
       align-items: center;
       justify-content: center;
       font-size: 11px;
-      color: rgba(255,255,255,0.7);
-      box-shadow: -3px 0 10px rgba(0,0,0,0.3);
-      transition: color 0.15s;
+      color: rgba(255,255,255,0.8);
+      box-shadow: -3px 0 10px rgba(0,0,0,0.4);
+      transition: color 0.15s, right 0.25s cubic-bezier(.4,0,.2,1);
     }
 
-    #dji-lang-toggle:hover {
+    #dji-lang-tab:hover {
       color: #fff;
     }
 
@@ -366,16 +368,32 @@
   const panel = document.createElement('div');
   panel.id = 'dji-lang-panel';
 
-  // 收起/展开 toggle
-  const toggle = document.createElement('div');
-  toggle.id = 'dji-lang-toggle';
-  toggle.title = '收起/展开语种面板';
-  toggle.textContent = '◀';
-  toggle.addEventListener('click', () => {
-    const collapsed = panel.classList.toggle('collapsed');
-    toggle.textContent = collapsed ? '▶' : '◀';
+  // 独立的收起/展开 tab（脱离面板，不受 overflow 影响）
+  const tab = document.createElement('div');
+  tab.id = 'dji-lang-tab';
+  tab.title = '收起/展开语种面板';
+  tab.textContent = '◀';
+
+  let collapsed = false;
+  tab.addEventListener('click', () => {
+    collapsed = !collapsed;
+    if (collapsed) {
+      panel.style.transform = 'translateY(-50%) translateX(100%)';
+      tab.style.right = '0px';
+      tab.textContent = '▶';
+    } else {
+      panel.style.transform = 'translateY(-50%)';
+      tab.style.right = (panel.offsetWidth) + 'px';
+      tab.textContent = '◀';
+    }
   });
-  panel.appendChild(toggle);
+
+  // 面板展开时 tab 跟着面板左边
+  function updateTabPosition() {
+    if (!collapsed) {
+      tab.style.right = panel.offsetWidth + 'px';
+    }
+  }
 
   // 生成语种按钮
   LANGS.forEach((lang) => {
@@ -453,5 +471,9 @@
     panel.appendChild(item);
   });
 
+  document.body.appendChild(tab);
   document.body.appendChild(panel);
+
+  // 初始化 tab 位置（等面板渲染完）
+  requestAnimationFrame(() => updateTabPosition());
 })();
