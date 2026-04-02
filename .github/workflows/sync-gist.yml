@@ -1,0 +1,32 @@
+name: Sync to Gist
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dji-store-lang-switcher.user.js'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update Gist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIST_TOKEN }}
+        run: |
+          curl -X PATCH \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d @- \
+            https://api.github.com/gists/117e8a27bbecd234685f7d86d8d95aac \
+            <<EOF
+          {
+            "files": {
+              "dji-store-lang-switcher.user.js": {
+                "content": $(cat dji-store-lang-switcher.user.js | python3 -c "import json,sys; print(json.dumps(sys.stdin.read()))")
+              }
+            }
+          }
+          EOF
