@@ -8,6 +8,8 @@
 // @match        https://stag-www-reactor.dbeta.me/*
 // @grant        none
 // @run-at       document-end
+// @updateURL    https://gist.githubusercontent.com/Chris-zidi/117e8a27bbecd234685f7d86d8d95aac/raw/dji-store-lang-switcher.user.js
+// @downloadURL  https://gist.githubusercontent.com/Chris-zidi/117e8a27bbecd234685f7d86d8d95aac/raw/dji-store-lang-switcher.user.js
 // ==/UserScript==
 
 (function () {
