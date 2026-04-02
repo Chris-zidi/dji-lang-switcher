@@ -35,15 +35,15 @@
     },
     {
       label: 'English',
-      path: null, region: 'US',   // 美国：store.dji.com/product/...（无语种前缀）
+      path: 'hk-en', region: 'HK',
       gradient: 'linear-gradient(135deg, #34d399, #06b6d4)',
       sub: [
+        { label: 'Hong Kong (EN)', path: 'hk-en', region: 'HK' },
         { label: 'United States',    path: null,    region: 'US' },
         { label: 'United Kingdom',   path: 'uk',    region: 'GB' },
         { label: 'Australia',        path: 'au',    region: 'AU' },
         { label: 'Canada',           path: 'ca',    region: 'CA' },
         { label: 'Singapore',        path: 'sg',    region: 'SG' },
-        { label: 'Hong Kong (EN)',   path: 'hk-en', region: 'HK' },
         { label: 'New Zealand',      path: 'nz',    region: 'NZ' },
         { label: 'Philippines',      path: 'ph',    region: 'PH' },
         { label: 'Puerto Rico',      path: 'pr',    region: 'PR' },
