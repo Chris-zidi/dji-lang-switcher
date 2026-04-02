@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'dji-store-lang-switcher.user.js'
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   sync:
