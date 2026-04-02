@@ -1,10 +1,11 @@
 // ==UserScript==
-// @name         DJI Store 语种快速切换
+// @name         DJI 语种快速切换
 // @namespace    https://store.dji.com/
-// @version      3.0.0
-// @description  在 DJI 商城右侧注入语种快捷切换按钮面板，数据来源：弹窗 DOM 实测
+// @version      4.0.0
+// @description  在 DJI 商城及后台编辑页右侧注入语种快捷切换按钮面板
 // @author       o-park.chen
 // @match        https://store.dji.com/*
+// @match        https://stag-www-reactor.dbeta.me/*
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
@@ -113,21 +114,28 @@
     },
   ];
 
+  // ── 站点配置 ─────────────────────────────────────────────
+  const isDbeta = location.hostname.includes('dbeta.me');
+
   // ── URL 切换函数 ──────────────────────────────────────────
-  // path=null 表示美国，URL 格式为 store.dji.com/product/...
+  // path=null 表示美国，URL 无语种前缀
   function switchTo(path, region) {
     const url = new URL(window.location.href);
     const parts = url.pathname.split('/').filter(Boolean);
 
-    // 判断当前是否有语种前缀（非 product/category 等页面段）
-    const knownPageSegments = ['product', 'category', 'cart', 'account', 'search', 'combo'];
+    // 判断第一段是否为语种前缀
+    // dbeta: 第一段是语种 或 直接是 mobile（美国无前缀）
+    // store: 第一段是语种 或 product/category 等（美国无前缀）
+    const knownPageSegments = isDbeta
+      ? ['mobile', 'product', 'category', 'cart', 'account', 'search']
+      : ['product', 'category', 'cart', 'account', 'search', 'combo'];
     const hasLangPrefix = parts.length > 0 && !knownPageSegments.includes(parts[0]);
 
     if (path === null) {
-      // 切换到美国：去掉语种前缀
+      // 美国：去掉语种前缀
       if (hasLangPrefix) parts.shift();
     } else {
-      // 切换到有前缀的地区
+      // 有前缀的地区
       if (hasLangPrefix) {
         parts[0] = path;
       } else {
@@ -136,9 +144,17 @@
     }
 
     url.pathname = '/' + parts.join('/');
-    url.searchParams.delete('set_region');
-    url.searchParams.delete('from');
-    url.searchParams.set('set_region', region);
+
+    if (isDbeta) {
+      // dbeta：只保留 workspace，不需要 set_region
+      url.searchParams.delete('set_region');
+      url.searchParams.delete('from');
+    } else {
+      // DJI Store：需要 set_region
+      url.searchParams.delete('set_region');
+      url.searchParams.delete('from');
+      url.searchParams.set('set_region', region);
+    }
 
     window.location.href = url.toString();
   }
