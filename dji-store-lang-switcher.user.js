@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DJI 语种快速切换2
 // @namespace    https://store.dji.com/
-// @version      4.0.2
+// @version      4.0.3
 // @description  在 DJI 商城及后台编辑页右侧注入语种快捷切换按钮面板
 // @author       o-park.chen
 // @match        https://store.dji.com/*
@@ -130,9 +130,9 @@
 
     // 判断第一段是否为语种前缀
     const knownPageSegments = (isDbeta)
-      ? ['mobile', 'product', 'category', 'cart', 'account', 'search']
+      ? ['mobile', 'edit', 'product', 'category', 'cart', 'account', 'search']
       : isReactor
-      ? ['handheld', 'product', 'category', 'cart', 'account', 'search']
+      ? ['handheld', 'edit', 'product', 'category', 'cart', 'account', 'search']
       : ['product', 'category', 'cart', 'account', 'search', 'combo'];
     const hasLangPrefix = parts.length > 0 && !knownPageSegments.includes(parts[0]);
 
