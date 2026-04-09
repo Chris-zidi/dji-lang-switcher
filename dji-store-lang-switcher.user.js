@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DJI 语种快速切换2
 // @namespace    https://store.dji.com/
-// @version      4.0.3
+// @version      4.1.0
 // @description  在 DJI 商城及后台编辑页右侧注入语种快捷切换按钮面板
 // @author       o-park.chen
 // @match        https://store.dji.com/*
@@ -161,6 +161,37 @@
       url.searchParams.set('set_region', region);
     }
 
+    window.location.href = url.toString();
+  }
+
+  // ── 设备检测与切换（仅 dbeta / reactor）─────────────────
+  function isMobileUrl() {
+    const parts = location.pathname.split('/').filter(Boolean);
+    const knownPageSegs = ['mobile', 'edit', 'handheld', 'product', 'category', 'cart', 'account', 'search'];
+    const hasLangPrefix = parts.length > 0 && !knownPageSegs.includes(parts[0]);
+    const mobileIndex = hasLangPrefix ? 1 : 0;
+    return parts[mobileIndex] === 'mobile';
+  }
+
+  function switchDevice(toMobile) {
+    const url = new URL(window.location.href);
+    const parts = url.pathname.split('/').filter(Boolean);
+    const knownPageSegs = ['mobile', 'edit', 'handheld', 'product', 'category', 'cart', 'account', 'search'];
+    const hasLangPrefix = parts.length > 0 && !knownPageSegs.includes(parts[0]);
+    const mobileIndex = hasLangPrefix ? 1 : 0;
+    const hasMobile = parts[mobileIndex] === 'mobile';
+
+    if (toMobile && !hasMobile) {
+      // 插入 mobile 到语种后面
+      parts.splice(mobileIndex, 0, 'mobile');
+    } else if (!toMobile && hasMobile) {
+      // 移除 mobile
+      parts.splice(mobileIndex, 1);
+    } else {
+      return; // 已经是目标状态，不操作
+    }
+
+    url.pathname = '/' + parts.join('/');
     window.location.href = url.toString();
   }
 
@@ -361,6 +392,49 @@
       background: rgba(255,255,255,0.2);
       color: #fff;
     }
+
+    /* PC/MB 设备切换按钮 */
+    .dji-device-row {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 4px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .dji-device-btn {
+      flex: 1;
+      height: 36px;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.15s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .dji-device-btn.active {
+      background: rgba(59, 130, 246, 0.9);
+      color: #fff;
+      border-color: rgba(96, 165, 250, 0.6);
+      box-shadow: 0 2px 12px rgba(59,130,246,0.4);
+    }
+
+    .dji-device-btn.inactive {
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.45);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .dji-device-btn.inactive:hover {
+      background: rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.8);
+    }
   `;
   document.head.appendChild(style);
 
@@ -393,6 +467,30 @@
     if (!collapsed) {
       tab.style.right = panel.offsetWidth + 'px';
     }
+  }
+
+  // ── PC/MB 设备切换按钮（仅 dbeta / reactor）──────────────
+  if (isDbeta || isReactor) {
+    const deviceRow = document.createElement('div');
+    deviceRow.className = 'dji-device-row';
+
+    const mobile = isMobileUrl();
+
+    const pcBtn = document.createElement('button');
+    pcBtn.className = 'dji-device-btn ' + (mobile ? 'inactive' : 'active');
+    pcBtn.textContent = '🖥 PC';
+    pcBtn.title = '切换到电脑端';
+    pcBtn.addEventListener('click', () => switchDevice(false));
+
+    const mbBtn = document.createElement('button');
+    mbBtn.className = 'dji-device-btn ' + (mobile ? 'active' : 'inactive');
+    mbBtn.textContent = '📱 MB';
+    mbBtn.title = '切换到手机端';
+    mbBtn.addEventListener('click', () => switchDevice(true));
+
+    deviceRow.appendChild(pcBtn);
+    deviceRow.appendChild(mbBtn);
+    panel.appendChild(deviceRow);
   }
 
   // 生成语种按钮
