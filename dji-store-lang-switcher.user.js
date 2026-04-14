@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DJI 语种快速切换2
 // @namespace    https://store.dji.com/
-// @version      4.2.1
+// @version      4.2.2
 // @description  在 DJI 商城及后台编辑页右侧注入语种快捷切换按钮面板，MKT 后台弹窗语种快选
 // @author       o-park.chen
 // @match        https://store.dji.com/*
@@ -587,15 +587,15 @@
   function initMktLangSelector() {
     // 语种配置：value 对应 checkbox 的 value 属性
     const MKT_LANGS = [
-      { label: 'EN英语',    value: 'en',    gradient: 'linear-gradient(135deg, #34d399, #06b6d4)' },
+      { label: 'English',   value: 'en',    gradient: 'linear-gradient(135deg, #34d399, #06b6d4)' },
       { label: '中文',      value: 'zh-CN', gradient: 'linear-gradient(135deg, #f6a623, #f97316)' },
-      { label: 'TCN繁體',   value: 'zh-TW', gradient: 'linear-gradient(135deg, #a78bfa, #ec4899)' },
-      { label: '日本語',    value: 'ja',    gradient: 'linear-gradient(135deg, #f472b6, #fb7185)' },
-      { label: 'DE德语',    value: 'de',    gradient: 'linear-gradient(135deg, #fb923c, #f97316)' },
-      { label: 'FR法语',    value: 'fr',    gradient: 'linear-gradient(135deg, #38bdf8, #06b6d4)' },
-      { label: 'ES西语',    value: 'es',    gradient: 'linear-gradient(135deg, #f87171, #fb923c)' },
+      { label: '繁體中文',  value: 'zh-TW', gradient: 'linear-gradient(135deg, #a78bfa, #ec4899)' },
+      { label: '日本语',    value: 'ja',    gradient: 'linear-gradient(135deg, #f472b6, #fb7185)' },
+      { label: 'Deutsch',   value: 'de',    gradient: 'linear-gradient(135deg, #fb923c, #f97316)' },
+      { label: 'Français',  value: 'fr',    gradient: 'linear-gradient(135deg, #38bdf8, #06b6d4)' },
       { label: '한국어',    value: 'ko',    gradient: 'linear-gradient(135deg, #818cf8, #6366f1)' },
-      { label: 'IT意语',    value: 'it',    gradient: 'linear-gradient(135deg, #4ade80, #34d399)' },
+      { label: 'español',   value: 'es',    gradient: 'linear-gradient(135deg, #f87171, #fb923c)' },
+      { label: 'Italiano',  value: 'it',    gradient: 'linear-gradient(135deg, #4ade80, #34d399)' },
     ];
 
     // 注入样式
@@ -604,8 +604,7 @@
       #mkt-lang-panel {
         position: fixed;
         left: 0;
-        top: 50%;
-        transform: translateY(-50%);
+        top: 120px;
         z-index: 999999;
         display: none;
         flex-direction: column;
