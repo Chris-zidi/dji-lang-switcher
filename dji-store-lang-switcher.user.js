@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DJI 语种快速切换2
 // @namespace    https://store.dji.com/
-// @version      4.2.0
+// @version      4.2.1
 // @description  在 DJI 商城及后台编辑页右侧注入语种快捷切换按钮面板，MKT 后台弹窗语种快选
 // @author       o-park.chen
 // @match        https://store.dji.com/*
@@ -687,20 +687,19 @@
     }
 
     // 监听弹窗出现/消失，控制面板显隐
-    const observer = new MutationObserver(() => {
+    // 用定时轮询代替 MutationObserver，避免 observer 回调触发 DOM 变化导致无限循环
+    let mktPanelVisible = false;
+    setInterval(() => {
       const modal = document.querySelector('.modal.fade.in');
-      if (modal && modal.querySelector('label.col-md-3 input[type="checkbox"]')) {
-        panel.classList.add('visible');
-      } else {
-        panel.classList.remove('visible');
-      }
-    });
+      const hasLangCheckbox = modal && modal.querySelector('label.col-md-3 input[type="checkbox"]');
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class', 'style'],
-    });
+      if (hasLangCheckbox && !mktPanelVisible) {
+        panel.classList.add('visible');
+        mktPanelVisible = true;
+      } else if (!hasLangCheckbox && mktPanelVisible) {
+        panel.classList.remove('visible');
+        mktPanelVisible = false;
+      }
+    }, 300);
   }
 })();
