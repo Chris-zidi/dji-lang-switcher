@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         DJI 语种快速切换2
 // @namespace    https://store.dji.com/
-// @version      4.1.0
-// @description  在 DJI 商城及后台编辑页右侧注入语种快捷切换按钮面板
+// @version      4.2.0
+// @description  在 DJI 商城及后台编辑页右侧注入语种快捷切换按钮面板，MKT 后台弹窗语种快选
 // @author       o-park.chen
 // @match        https://store.dji.com/*
 // @match        https://stag-www-reactor.dbeta.me/*
 // @match        https://www-reactor.dji.com/*
+// @match        https://mkt.djiits.com/*
 // @grant        none
 // @run-at       document-end
 // @updateURL    https://gist.githubusercontent.com/Chris-zidi/117e8a27bbecd234685f7d86d8d95aac/raw/dji-store-lang-switcher.user.js
@@ -121,6 +122,13 @@
   const host = location.hostname;
   const isDbeta = host.includes('dbeta.me');
   const isReactor = host.includes('www-reactor.dji.com');
+  const isMkt = host.includes('mkt.djiits.com');
+
+  // ── MKT 后台：弹窗语种快选（独立逻辑）────────────────────
+  if (isMkt) {
+    initMktLangSelector();
+    return; // MKT 站不需要右侧语种切换面板
+  }
 
   // ── URL 切换函数 ──────────────────────────────────────────
   // path=null 表示美国，URL 无语种前缀
@@ -574,4 +582,125 @@
 
   // 初始化 tab 位置（等面板渲染完）
   requestAnimationFrame(() => updateTabPosition());
+
+  // ── MKT 后台弹窗语种快选功能 ─────────────────────────────
+  function initMktLangSelector() {
+    // 语种配置：value 对应 checkbox 的 value 属性
+    const MKT_LANGS = [
+      { label: 'EN英语',    value: 'en',    gradient: 'linear-gradient(135deg, #34d399, #06b6d4)' },
+      { label: '中文',      value: 'zh-CN', gradient: 'linear-gradient(135deg, #f6a623, #f97316)' },
+      { label: 'TCN繁體',   value: 'zh-TW', gradient: 'linear-gradient(135deg, #a78bfa, #ec4899)' },
+      { label: '日本語',    value: 'ja',    gradient: 'linear-gradient(135deg, #f472b6, #fb7185)' },
+      { label: 'DE德语',    value: 'de',    gradient: 'linear-gradient(135deg, #fb923c, #f97316)' },
+      { label: 'FR法语',    value: 'fr',    gradient: 'linear-gradient(135deg, #38bdf8, #06b6d4)' },
+      { label: 'ES西语',    value: 'es',    gradient: 'linear-gradient(135deg, #f87171, #fb923c)' },
+      { label: '한국어',    value: 'ko',    gradient: 'linear-gradient(135deg, #818cf8, #6366f1)' },
+      { label: 'IT意语',    value: 'it',    gradient: 'linear-gradient(135deg, #4ade80, #34d399)' },
+    ];
+
+    // 注入样式
+    const style = document.createElement('style');
+    style.textContent = `
+      #mkt-lang-panel {
+        position: fixed;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 999999;
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        padding: 8px 6px;
+        background: rgba(18, 18, 28, 0.93);
+        border-radius: 0 14px 14px 0;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+        backdrop-filter: blur(10px);
+        user-select: none;
+      }
+
+      #mkt-lang-panel.visible {
+        display: flex;
+      }
+
+      .mkt-lang-btn {
+        width: 80px;
+        height: 36px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        white-space: nowrap;
+      }
+
+      .mkt-lang-btn:hover {
+        transform: scale(1.06);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      }
+    `;
+    document.head.appendChild(style);
+
+    // 构建面板
+    const panel = document.createElement('div');
+    panel.id = 'mkt-lang-panel';
+
+    MKT_LANGS.forEach((lang) => {
+      const btn = document.createElement('button');
+      btn.className = 'mkt-lang-btn';
+      btn.style.background = lang.gradient;
+      btn.textContent = lang.label;
+      btn.title = '只选 ' + lang.label;
+
+      btn.addEventListener('click', () => {
+        selectOnlyLang(lang.value);
+      });
+
+      panel.appendChild(btn);
+    });
+
+    document.body.appendChild(panel);
+
+    // 只勾选指定语种：先取消所有已勾选的，再勾选目标
+    function selectOnlyLang(targetValue) {
+      const modal = document.querySelector('.modal.fade.in');
+      if (!modal) return;
+
+      const labels = modal.querySelectorAll('label.col-md-3');
+      labels.forEach((label) => {
+        const cb = label.querySelector('input[type="checkbox"]');
+        if (!cb) return;
+
+        if (cb.value === targetValue) {
+          // 目标语种：确保勾选
+          if (!cb.checked) label.click();
+        } else {
+          // 非目标语种：确保取消
+          if (cb.checked) label.click();
+        }
+      });
+    }
+
+    // 监听弹窗出现/消失，控制面板显隐
+    const observer = new MutationObserver(() => {
+      const modal = document.querySelector('.modal.fade.in');
+      if (modal && modal.querySelector('label.col-md-3 input[type="checkbox"]')) {
+        panel.classList.add('visible');
+      } else {
+        panel.classList.remove('visible');
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style'],
+    });
+  }
 })();
