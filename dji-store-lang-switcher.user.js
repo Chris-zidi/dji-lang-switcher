@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DJI 语种快速切换2
 // @namespace    https://store.dji.com/
-// @version      4.2.2
+// @version      4.2.3
 // @description  在 DJI 商城及后台编辑页右侧注入语种快捷切换按钮面板，MKT 后台弹窗语种快选
 // @author       o-park.chen
 // @match        https://store.dji.com/*
@@ -603,15 +603,15 @@
     style.textContent = `
       #mkt-lang-panel {
         position: fixed;
-        left: 0;
-        top: 120px;
+        left: 6px;
+        top: 100px;
         z-index: 999999;
         display: none;
         flex-direction: column;
-        gap: 5px;
-        padding: 8px 6px;
+        gap: 6px;
+        padding: 10px 8px;
         background: rgba(18, 18, 28, 0.93);
-        border-radius: 0 14px 14px 0;
+        border-radius: 12px;
         box-shadow: 4px 0 24px rgba(0,0,0,0.5);
         backdrop-filter: blur(10px);
         user-select: none;
@@ -622,25 +622,32 @@
       }
 
       .mkt-lang-btn {
-        width: 80px;
-        height: 36px;
+        width: 120px;
+        height: 40px;
         border: none;
-        border-radius: 8px;
+        border-radius: 12px;
         cursor: pointer;
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 700;
-        color: #1a1a1a;
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         display: flex;
         align-items: center;
-        justify-content: center;
+        padding: 0 12px;
+        gap: 6px;
         transition: transform 0.15s, box-shadow 0.15s;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.35);
         white-space: nowrap;
       }
 
       .mkt-lang-btn:hover {
-        transform: scale(1.06);
-        box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+        transform: scale(1.05);
+        box-shadow: 0 5px 18px rgba(0,0,0,0.45);
+      }
+
+      .mkt-lang-btn .mkt-star {
+        font-size: 14px;
+        flex-shrink: 0;
       }
     `;
     document.head.appendChild(style);
@@ -653,7 +660,7 @@
       const btn = document.createElement('button');
       btn.className = 'mkt-lang-btn';
       btn.style.background = lang.gradient;
-      btn.textContent = lang.label;
+      btn.innerHTML = '<span class="mkt-star">⭐</span>' + lang.label;
       btn.title = '只选 ' + lang.label;
 
       btn.addEventListener('click', () => {
